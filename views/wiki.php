@@ -52,10 +52,17 @@ function wiki_folder_contains_active(array $folder, string $currentPage): bool
 </head>
 <body>
 <div class="wiki-shell">
-    <nav class="sidebar">
+    <div class="sidebar-overlay" id="sidebarOverlay"></div>
+    <nav class="sidebar" id="sidebar">
         <div class="sidebar-header">
             <div class="logo-dot"></div>
             <h1><?= htmlspecialchars(WIKI_TITLE) ?></h1>
+            <button type="button" class="sidebar-close" id="sidebarClose" aria-label="Close menu">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <line x1="18" y1="6" x2="6" y2="18"></line>
+                    <line x1="6" y1="6" x2="18" y2="18"></line>
+                </svg>
+            </button>
         </div>
         <ul class="tree">
             <?php foreach ($tree as $node): ?>
@@ -69,6 +76,13 @@ function wiki_folder_contains_active(array $folder, string $currentPage): bool
 
     <main class="main">
         <div class="topbar">
+            <button type="button" class="menu-toggle" id="menuToggle" aria-label="Open menu">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <line x1="3" y1="6" x2="21" y2="6"></line>
+                    <line x1="3" y1="12" x2="21" y2="12"></line>
+                    <line x1="3" y1="18" x2="21" y2="18"></line>
+                </svg>
+            </button>
             <form class="search-form" method="get" action="index.php">
                 <span class="icon">
                     <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
@@ -79,7 +93,7 @@ function wiki_folder_contains_active(array $folder, string $currentPage): bool
                 <input type="text" name="q" placeholder="Search the wiki…" value="<?= htmlspecialchars($query) ?>" autocomplete="off">
             </form>
             <div class="user-box">
-                <span>Signed in as <span class="username"><?= htmlspecialchars(wiki_current_user()) ?></span></span>
+                <span><span class="signed-in-text">Signed in as </span><span class="username"><?= htmlspecialchars(wiki_current_user()) ?></span></span>
                 <a class="btn-logout" href="logout.php">Sign out</a>
             </div>
         </div>
@@ -132,6 +146,30 @@ function wiki_folder_contains_active(array $folder, string $currentPage): bool
 </div>
 <script>
 document.addEventListener('DOMContentLoaded', function () {
+    var sidebar = document.getElementById('sidebar');
+    var overlay = document.getElementById('sidebarOverlay');
+    var menuToggle = document.getElementById('menuToggle');
+    var sidebarClose = document.getElementById('sidebarClose');
+
+    function openSidebar() {
+        sidebar.classList.add('open');
+        overlay.classList.add('visible');
+        document.body.style.overflow = 'hidden';
+    }
+    function closeSidebar() {
+        sidebar.classList.remove('open');
+        overlay.classList.remove('visible');
+        document.body.style.overflow = '';
+    }
+
+    if (menuToggle) menuToggle.addEventListener('click', openSidebar);
+    if (sidebarClose) sidebarClose.addEventListener('click', closeSidebar);
+    if (overlay) overlay.addEventListener('click', closeSidebar);
+
+    sidebar.querySelectorAll('.tree-file a').forEach(function (link) {
+        link.addEventListener('click', closeSidebar);
+    });
+
     if (window.hljs) {
         document.querySelectorAll('.article pre.code-block code').forEach(function (block) {
             hljs.highlightElement(block);
